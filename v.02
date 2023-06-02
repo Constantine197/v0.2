@@ -1,0 +1,119 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <fstream>
+#include <sstream>
+
+using std::cout;
+using std::cin;
+using std::endl;
+using std::setw;
+using std::string;
+using std::left;
+using std::right;
+using std::setprecision;
+using std::copy;
+using std::fixed;
+using std::istringstream;
+
+float calculateAverage(const std::vector<float>& grades) {
+    float total = 0;
+    for (float grade : grades) {
+        total += grade;
+    }
+    return grades.empty() ? 0 : total / grades.size();
+}
+
+float calculateMedian(const std::vector<float>& grades) {
+    std::vector<float> sortedGrades = grades;
+    std::sort(sortedGrades.begin(), sortedGrades.end());
+    size_t size = sortedGrades.size();
+    if (size % 2 == 0) {
+        return (sortedGrades[size / 2 - 1] + sortedGrades[size / 2]) / 2;
+    }
+    else {
+        return sortedGrades[size / 2];
+    }
+}
+
+int main() {
+    std::ifstream inputFile("Studentai10000.txt"); // Open the text file for reading
+
+    if (inputFile.is_open()) {
+        std::vector<std::string> vardai;
+        std::vector<std::string> pavardes;
+        std::vector<std::vector<float>> grades;
+        string line;
+
+        while (getline(inputFile, line)) {
+            std::vector<float> studentGrades;
+            istringstream lineStream(line); // Change 'iss' to 'lineStream'
+            string firstName, lastName;
+            float grade;
+
+            if (lineStream >> firstName >> lastName) {
+                while (lineStream >> grade) {
+                    studentGrades.push_back(grade);
+                }
+
+                vardai.push_back(firstName);
+                pavardes.push_back(lastName);
+                grades.push_back(studentGrades);
+            }
+        }
+
+        inputFile.close();
+
+        // Rest of the code remains the same...
+
+        // Calculate the maximum lengths of last name, first name, average grade, and median grade
+        size_t maxLastNameLength = 9; // Minimum length for title alignment
+        size_t maxFirstNameLength = 10;
+        size_t maxAverageGradeLength = 14; // Increased to accommodate decimal places
+        size_t maxMedianGradeLength = 10; // Increased to accommodate decimal places
+
+        for (size_t i = 0; i < vardai.size(); i++) {
+            if (pavardes[i].length() > maxLastNameLength) {
+                maxLastNameLength = pavardes[i].length();
+            }
+            if (vardai[i].length() > maxFirstNameLength) {
+                maxFirstNameLength = vardai[i].length();
+            }
+            std::string averageGradeString = std::to_string(calculateAverage(grades[i]));
+            if (averageGradeString.length() > maxAverageGradeLength) {
+                maxAverageGradeLength = averageGradeString.length();
+            }
+            std::string medianGradeString = std::to_string(calculateMedian(grades[i]));
+            if (medianGradeString.length() > maxMedianGradeLength) {
+                maxMedianGradeLength = medianGradeString.length();
+            }
+        }
+
+        // Display student information with aligned columns
+        cout << left << setw(maxLastNameLength) << "Last Name";
+        cout << left << setw(maxFirstNameLength) << "First Name";
+        cout << left << setw(maxAverageGradeLength) << "Average Grade";
+        cout << left << setw(maxMedianGradeLength) << "Median" << endl;
+
+        // Print the line of '-'
+        size_t totalLength = maxLastNameLength + maxFirstNameLength + maxAverageGradeLength + maxMedianGradeLength;
+        cout << string(totalLength, '-') << endl;
+
+        cout << fixed << setprecision(2); // Set the precision to two decimal places
+
+        for (size_t i = 0; i < vardai.size(); i++) {
+            cout << left << setw(maxLastNameLength) << pavardes[i];
+            cout << left << setw(maxFirstNameLength) << vardai[i];
+            cout << left << setw(maxAverageGradeLength) << calculateAverage(grades[i]);
+            cout << left << setw(maxMedianGradeLength) << calculateMedian(grades[i]) << endl;
+        }
+    }
+    else {
+        cout << "Failed to open the file." << endl;
+        return 1; // Return an error code
+    }
+
+    return 0;
+}
